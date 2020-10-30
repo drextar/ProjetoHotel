@@ -11,10 +11,15 @@ import br.com.fatec.dao.ReservarDAO;
 import br.com.fatec.model.Hospede;
 import br.com.fatec.model.Quarto;
 import br.com.fatec.model.Reservar;
+import static java.awt.Color.blue;
 import java.awt.event.KeyEvent;
 import java.sql.SQLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import static javafx.scene.paint.Color.color;
+import static javafx.scene.paint.Color.color;
+import static javafx.scene.paint.Color.color;
+import javax.swing.JInternalFrame;
 import javax.swing.JOptionPane;
 
 /**
@@ -25,6 +30,7 @@ public class AddReserva extends javax.swing.JInternalFrame {
     HospedeDAO hospedeDao = new HospedeDAO();
     QuartoDAO qDao = new QuartoDAO();
     ReservarDAO urDao = new ReservarDAO();
+    
     /**
      * Creates new form AdicionarReserva
      */
@@ -225,10 +231,9 @@ public class AddReserva extends javax.swing.JInternalFrame {
                     .addComponent(jLabel6)
                     .addComponent(jLabel7))
                 .addGap(7, 7, 7)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(jButton1)
-                        .addComponent(txtSaida, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jButton1)
+                    .addComponent(txtSaida, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(txtEntrada, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
@@ -240,7 +245,7 @@ public class AddReserva extends javax.swing.JInternalFrame {
                     .addComponent(jButton2)
                     .addComponent(jButton3)
                     .addComponent(txtTot, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(24, Short.MAX_VALUE))
+                .addContainerGap(28, Short.MAX_VALUE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
@@ -257,34 +262,60 @@ public class AddReserva extends javax.swing.JInternalFrame {
         pack();
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+    private void txtCpfFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtCpfFocusLost
         // TODO add your handling code here:
-        hide();
-    }//GEN-LAST:event_jButton3ActionPerformed
-
-    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
-        // TODO add your handling code here:
-        if(txtCpf.getText().equals("") || txtNum.getText().equals("") || txtEntrada.getText().equals("") || txtSaida.getText().equals("")){
-            JOptionPane.showMessageDialog(rootPane, "Preencha todos os campos de reserva!");
+        Hospede hospede = new Hospede();
+        if(txtCpf.getText().equals("")){
+            JOptionPane.showMessageDialog(rootPane, "Preencha o campo CPF!");
         } else {
-            Reservar ur = new Reservar();
-            ur.setCpf(txtCpf.getText());
-            ur.setNumQuarto(txtNum.getText());
-            ur.setValorTotal(Float.parseFloat(txtTot.getText()));
-            ur.setEntrada(txtEntrada.getText());
-            ur.setSaida(txtSaida.getText());
+            hospede.setCpf(txtCpf.getText());
             try {
-                if(urDao.inserirReserva(ur)){
-                    JOptionPane.showMessageDialog(null, "Reserva realizada com suceddo!");
-                }
+                hospede = hospedeDao.buscar(hospede);
             } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(null, "Erro ao reservar: " + ex);
+                JOptionPane.showMessageDialog(rootPane, "Erro: "
+                    + ex.getMessage());
             } catch (ClassNotFoundException ex) {
-                JOptionPane.showMessageDialog(null, "Erro ao reservar! " + ex);
+                Logger.getLogger(BuscaHospede.class.getName()).log(Level.SEVERE, null, ex);
             }
-            limpaDados();        
+            if (hospede != null) {
+                txtNomeHospede.setText(hospede.getNome());
+            } else {
+                JOptionPane.showMessageDialog(rootPane,
+                    "CPF não cadastrado!");
+            }
         }
-    }//GEN-LAST:event_jButton2ActionPerformed
+    }//GEN-LAST:event_txtCpfFocusLost
+
+    private void txtNumKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtNumKeyTyped
+        // TODO add your handling code here:
+        char c=evt.getKeyChar();
+        if(!Character.isDigit(c) || c==KeyEvent.VK_BACK_SPACE || c==KeyEvent.VK_DELETE){
+            evt.consume();
+        }
+    }//GEN-LAST:event_txtNumKeyTyped
+
+    private void txtNumFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtNumFocusLost
+        // TODO add your handling code here:
+        Quarto q = new Quarto();
+        q.setNumQuarto(txtNum.getText());
+        try {
+            q = qDao.buscar(q);
+        } catch (SQLException ex) {
+            JOptionPane.showMessageDialog(rootPane, "Erro: "
+                + ex.getMessage());
+        } catch (ClassNotFoundException ex) {
+            Logger.getLogger(AddReserva.class.getName()).log(Level.SEVERE, null, ex);
+        }
+
+        if(q != null){
+            txtTipo.setText(q.getTipoQuarto());
+            txtTotal.setText(String.valueOf(q.getValorDiaria()));
+        } else {
+            JOptionPane.showMessageDialog(rootPane, "Quarto não encontrado!");
+            txtTipo.setText("");
+            txtTotal.setText("");
+        }
+    }//GEN-LAST:event_txtNumFocusLost
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         // TODO add your handling code here:
@@ -294,13 +325,13 @@ public class AddReserva extends javax.swing.JInternalFrame {
             JOptionPane.showMessageDialog(rootPane, "Insira as datas de entrada/saída corretamente!");
         } else {
             Reservar ur = new Reservar();
-            
+
             ur.setNumQuarto(txtNum.getText());
             try {
                 ur = urDao.consultarDisponibilidade(ur);
             } catch (SQLException ex) {
                 JOptionPane.showMessageDialog(rootPane, "Erro: "
-                        + ex.getMessage());
+                    + ex.getMessage());
             } catch (ClassNotFoundException ex) {
                 Logger.getLogger(BuscaHospede.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -336,64 +367,38 @@ public class AddReserva extends javax.swing.JInternalFrame {
         }
     }//GEN-LAST:event_jButton1ActionPerformed
 
-    private void txtNumFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtNumFocusLost
-        // TODO add your handling code here:
-        Quarto q = new Quarto();
-        q.setNumQuarto(txtNum.getText());
-        try {
-            q = qDao.buscar(q);
-        } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(rootPane, "Erro: "
-                    + ex.getMessage());
-        } catch (ClassNotFoundException ex) {
-            Logger.getLogger(AddReserva.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        
-        if(q != null){
-            txtTipo.setText(q.getTipoQuarto());
-            txtTotal.setText(String.valueOf(q.getValorDiaria()));
-        } else {
-            JOptionPane.showMessageDialog(rootPane, "Quarto não encontrado!");
-            txtTipo.setText("");
-            txtTotal.setText("");
-        }
-    }//GEN-LAST:event_txtNumFocusLost
-
-    private void txtNumKeyTyped(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_txtNumKeyTyped
-        // TODO add your handling code here:
-        char c=evt.getKeyChar();
-        if(!Character.isDigit(c) || c==KeyEvent.VK_BACK_SPACE || c==KeyEvent.VK_DELETE){
-            evt.consume();
-        }
-    }//GEN-LAST:event_txtNumKeyTyped
-
     private void txtTotActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtTotActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_txtTotActionPerformed
 
-    private void txtCpfFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:event_txtCpfFocusLost
+    private void jButton2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton2ActionPerformed
         // TODO add your handling code here:
-        Hospede hospede = new Hospede();
-        if(txtCpf.getText().equals("")){
-            JOptionPane.showMessageDialog(rootPane, "Preencha o campo CPF!");
+        if(txtCpf.getText().equals("") || txtNum.getText().equals("") || txtEntrada.getText().equals("") || txtSaida.getText().equals("")){
+            JOptionPane.showMessageDialog(rootPane, "Preencha todos os campos de reserva!");
         } else {
-            hospede.setCpf(txtCpf.getText());
+            Reservar ur = new Reservar();
+            ur.setCpf(txtCpf.getText());
+            ur.setNumQuarto(txtNum.getText());
+            ur.setValorTotal(Float.parseFloat(txtTot.getText()));
+            ur.setEntrada(txtEntrada.getText());
+            ur.setSaida(txtSaida.getText());
             try {
-                hospede = hospedeDao.buscar(hospede);
+                if(urDao.inserirReserva(ur)){
+                    JOptionPane.showMessageDialog(null, "Reserva realizada com suceddo!");
+                }
             } catch (SQLException ex) {
-                JOptionPane.showMessageDialog(rootPane, "Erro: "
-                        + ex.getMessage());
+                JOptionPane.showMessageDialog(null, "Erro ao reservar: " + ex);
             } catch (ClassNotFoundException ex) {
-                Logger.getLogger(BuscaHospede.class.getName()).log(Level.SEVERE, null, ex);
+                JOptionPane.showMessageDialog(null, "Erro ao reservar! " + ex);
             }
-            if (hospede != null) {
-                txtNomeHospede.setText(hospede.getNome());            
-            } else {            
-                JOptionPane.showMessageDialog(rootPane, 
-                        "CPF não cadastrado!");
-            }
+            limpaDados();
         }
-    }//GEN-LAST:event_txtCpfFocusLost
+    }//GEN-LAST:event_jButton2ActionPerformed
+
+    private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton3ActionPerformed
+        // TODO add your handling code here:
+        hide();
+    }//GEN-LAST:event_jButton3ActionPerformed
 
     public void limpaDados(){
         txtCpf.setText("");
